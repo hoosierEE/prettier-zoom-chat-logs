@@ -1,7 +1,15 @@
 * prettier-zoom-chat-logs
-zoom chat.txt -> html
+/zoom chat.txt \rarr html/
 
+For reasons I do not understand, Zoom has at least two different chat text file formats.
+
+One format shows up in my Downloads folder on my local machine, the other is available from the Zoom website in the recordings tab.
+This project works on the latter format.
+
+So first download your chat text files from the Zoom website's Recordings tab, then
 
 #+begin_src
 for f in *.txt; do python3 pretty.py $f > $f.html; done
 #+end_src
+
+And enjoy.
