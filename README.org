@@ -1,2 +1,7 @@
 * prettier-zoom-chat-logs
 zoom chat.txt -> html
+
+
+#+begin_src
+for f in *.txt; do python3 pretty.py $f > $f.html; done
+#+end_src
