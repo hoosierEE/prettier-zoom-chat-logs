@@ -3,7 +3,8 @@
 usage:
   python3 pretty.py filename.txt > filename.html
 '''
-import argparse,re
+import argparse,re,sys
+
 
 def parse(t):
     pat = re.compile(r'\n[0-9]{2}:[0-9]{2}:[0-9]{2}', re.UNICODE)
@@ -52,7 +53,7 @@ def reply_react(msgs,reacts):
                 m['reactions'] = reacts[r]
 
         if msg.startswith('Replying to "'):
-            splitidx = msg.index('\n')
+            splitidx = len(msg.splitlines()[0])
             orig,what = msg[13:splitidx-1], msg[splitidx:].strip()
             if orig.endswith('...'):
                 orig = orig[:-3]
@@ -148,7 +149,7 @@ if __name__ == '__main__':
     args = p.parse_args()
 
     with open(args.txt) as f:
-        t = '\n'+f.read()
+        t = '\n'+f.read()+'\n00:00:00' #add tokens to start and end so processing can be uniform
 
     html = tohtml(args.txt, *parse(t))
     print(html)

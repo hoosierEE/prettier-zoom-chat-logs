@@ -6,10 +6,27 @@ For reasons I do not understand, Zoom has at least two different chat text file 
 One format shows up in my Downloads folder on my local machine, the other is available from the Zoom website in the recordings tab.
 This project works on the latter format.
 
-So first download your chat text files from the Zoom website's Recordings tab, then
+So first download your chat text files from the Zoom website's Recordings tab, then:
 
 #+begin_src
-for f in *.txt; do python3 pretty.py $f > $f.html; done
+python3 pretty.py demo.txt > demo.html
 #+end_src
 
-And enjoy.
+Input:
+
+#+begin_example
+00:58:04	Alex:	Depends on your teaching style, I guess.
+00:58:20	Wheezy:	Did  you check out https://scikit-learn.org/stable/modules/generated/sklearn.metrics.RocCurveDisplay.html#sklearn.metrics.RocCurveDisplay.from_predictions ?
+
+Are you putting a multiclass AUC ROC in your paper?
+00:59:20	Alex:	Replying to "Depends on your teac..."
+
+I'm not sure! It looks like it wouldn't add much to the visuals...
+01:00:13	Wheezy:	Reacted to "Depends on your teac..." with 👍
+01:01:30	Alex:	See ya!
+01:02:00	Wheezy:	l8r
+#+end_example
+
+Output:
+
+[[file:./screenshot.png]]

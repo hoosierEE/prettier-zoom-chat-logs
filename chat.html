@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html lang="en-US">
+ <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>chat</title>
+<style>:root{--bg:#effdff; --fg:#11116f; --dim:#bbb; --link:#444490;}
+@media(prefers-color-scheme:dark){
+    :root{--fg:#effdff;--bg:#4e5870; --dim:#ddd; --link:#aaaaff;}
+}
+body{
+    background-color:var(--bg);
+    color:var(--fg);
+    max-width:60em;
+    margin:auto;
+    font-family:system-ui;
+}
+a{color:var(--link);}
+.container{padding:0.5em;}
+.post{display:grid; grid-template-columns:1fr 2fr 8fr; column-gap:1em;}
+.time{color:var(--dim);}
+.auth{color:unset;}
+.msg{font-weight:300;overflow-y:auto;}
+.replylink{color:var(--dim); text-decoration:none; font-style:italic; font-size:smaller;}
+.emoj{color:var(--dim); font-size:smaller;}
+</style>
+ </head>
+<body>
+    <h1>chat</h1>
+    <hr>
+<div class="container"><div class="post"><span class="time">0:58:04</span><span class="auth">Alex</span><span class="msg" id="id_0">Depends on your teaching style, I guess.</span></div><div class="post"><span class="time"></span><span class="auth"></span><span class="emoj">👍 Wheezy</span></div></div>
+<div class="container"><div class="post"><span class="time">0:58:20</span><span class="auth">Wheezy</span><span class="msg" id="id_1">Did  you check out <a href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.RocCurveDisplay.html#sklearn.metrics.RocCurveDisplay.from_predictions">https://scikit-learn.org/stable/modules/generated/sklearn.metrics.RocCurveDisplay.html#sklearn.metrics.RocCurveDisplay.from_predictions</a> ?
+
+Are you putting a multiclass AUC ROC in your paper?</span></div></div>
+<div class="container"><div class="post"><span class="time"></span><span class="author"></span><span class="msg"><a class="replylink" href="#id_0">@Alex ← Depends on your teaching style...</a></span></div><div class="post"><span class="time">0:59:20</span><span class="auth">Alex</span><span class="msg" id="id_2">I'm not sure! It looks like it wouldn't add much to the visuals...</span></div></div>
+<div class="container"><div class="post"><span class="time">1:01:30</span><span class="auth">Alex</span><span class="msg" id="id_3">See ya!</span></div></div>
+<div class="container"><div class="post"><span class="time">1:02:00</span><span class="auth">Wheezy</span><span class="msg" id="id_4">l8r
+</span></div></div>
+    <hr>
+    <br>
+    <br>
+</body>
+</html>
+

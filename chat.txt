@@ -1,0 +1,10 @@
+00:58:04	Alex:	Depends on your teaching style, I guess.
+00:58:20	Wheezy:	Did  you check out https://scikit-learn.org/stable/modules/generated/sklearn.metrics.RocCurveDisplay.html#sklearn.metrics.RocCurveDisplay.from_predictions ?
+
+Are you putting a multiclass AUC ROC in your paper?
+00:59:20	Alex:	Replying to "Depends on your teac..."
+
+I'm not sure! It looks like it wouldn't add much to the visuals...
+01:00:13	Wheezy:	Reacted to "Depends on your teac..." with 👍
+01:01:30	Alex:	See ya!
+01:02:00	Wheezy:	l8r
