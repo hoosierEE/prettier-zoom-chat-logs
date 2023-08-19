@@ -9,7 +9,7 @@ This project works on the latter format.
 So first download your chat text files from the Zoom website's Recordings tab, then:
 
 #+begin_src
-python3 pretty.py demo.txt > demo.html
+python3 pretty.py chat.txt > chat.html
 #+end_src
 
 Input:
