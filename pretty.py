@@ -3,7 +3,7 @@
 usage:
   python3 pretty.py filename.txt > filename.html
 '''
-import argparse,re,sys
+import argparse,re
 
 def parse(t):
     pat = re.compile(r'\n[0-9]{2}:[0-9]{2}:[0-9]{2}', re.UNICODE)
@@ -12,7 +12,6 @@ def parse(t):
     auth = []
     msgs = []
     reacts = {}
-    part_lengths = set()
     for i in range(1,len(times)):
         t0 = times[i-1]
         t1 = times[i]
@@ -44,7 +43,8 @@ def parse(t):
     return stamps,auth,msgs,reacts
 
 
-def rr(msgs,reacts):
+def reply_react(msgs,reacts):
+    '''accumulate reply and reaction data in message dict'''
     for i,m in enumerate(msgs):
         msg = m['text']
         for r in reacts:
@@ -87,27 +87,31 @@ def linkify(s):
 
 
 def tohtml(filename,stamps,auth,msgs,reacts):
-    msgs = rr(msgs,reacts)
+    msgs = reply_react(msgs,reacts)
     content = []
     for i,(time,author,msg) in enumerate(zip(stamps,auth,msgs)):
         uid = f'id_{i}'
         container = []
+
+        # add optional reply with linkback
         if 'replyto' in msg:
             mid = msg['replyto']
             old = msgs[mid]['text'][:30]+'...'
-            # container.append(div('post', span('time',''), span('auth',''), span('emoj',emojos)))
             container.append(div('post',
                                  span('time',''),
                                  span('author',''),
                                  span('msg', anchor('replylink', f'#id_{mid}', '@'+auth[mid]+' ← '+old))))
 
+        # add main post body
         text = linkify(msg['text'])
         container.append(div('post', span('time',time), span('auth',author), span('msg',text,uid)))
+
+        # add optional reaction emoji and their authors
         if 'reactions' in msg:
             emojos = []
             for k,v in msg['reactions'].items():
                 emojos.append(' '.join([k,*v]))
-            # emojos = ''.join(list(msg['reactions'].keys()))
+
             container.append(div('post', span('time',''), span('auth',''), span('emoj',' '.join(emojos))))
 
         content.append(div('container', *container))
