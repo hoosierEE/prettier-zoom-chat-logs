@@ -2,6 +2,12 @@
 @media(prefers-color-scheme:dark){
     :root{--fg:#effdff;--bg:#4e5870; --dim:#ddd; --link:#aaaaff;}
 }
+@media print {
+  header,footer{display:none}
+  body{width:100%!important; padding:0!important; margin:0!important}
+}
+@page {margin:2cm}
+
 body{
     background-color:var(--bg);
     color:var(--fg);

@@ -145,11 +145,14 @@ def tohtml(filename,stamps,auth,msgs,reacts):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('txt', help='chat log text file (.txt)')
+    p.add_argument('txt', nargs='+', help='chat log text files (end in .txt)')
+    p.add_argument('--filename', default='chat.txt', help='optional name for output')
     args = p.parse_args()
 
-    with open(args.txt) as f:
-        t = '\n'+f.read()+'\n00:00:00' #add tokens to start and end so processing can be uniform
-
-    html = tohtml(args.txt, *parse(t))
+    t = '\n'
+    for fn in args.txt:
+        with open(fn) as f:
+            t += f.read() #add tokens to start and end so processing can be uniform
+    t += '\n00:00:00'
+    html = tohtml(args.filename, *parse(t))
     print(html)
