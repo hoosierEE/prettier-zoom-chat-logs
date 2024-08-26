@@ -1,50 +1,63 @@
-'''make zoom chat text files into prettier html files
-
-usage:
-  python3 pretty.py filename.txt > filename.html
-'''
+'''make zoom chat text files into prettier html files'''
 import argparse,re,sys
 
 
-def parse(t):
-    pat = re.compile(r'\n[0-9]{2}:[0-9]{2}:[0-9]{2}', re.UNICODE)
-    times = re.findall(pat, t)
-    stamps = []
-    auth = []
-    msgs = []
+def normalize_ellipsis(message:str) -> str:
+    '''replace "..." at end of message with "…"'''
+    if message.endswith('...'):
+        return message[:-3]+'…'
+    return message
+
+
+def parse(t:str) -> (list[str], list[str], list[dict], list[bool]):
+    auths,msgs,times = [],[],re.findall(r'[0-9]{1,2}:[0-9]{2}:[0-9]{2}', t)
     reacts = {}
     for i in range(1,len(times)):
-        t0 = times[i-1]
-        t1 = times[i]
-        start = t.index(t0)
-        t = t[start+9:]
-        end = t.index(t1)
-        _,author,msg = t[:end].split('\t')
+        t0,t1 = times[i-1],times[i]
+        t = t[t.index(t0)+8:]
+        msg = t[:t.index(t1)].lstrip()  # current message
 
-        # fix punctuation
-        author = author[:-1]
-        t0 = t0[1:]
+        # NOTE:
+        # Some Zoom chat log outputs are tab-delimited like
+        #     00:00:00\tAuthor:\tmessage\r\n
+        # Others have a different format (with optional " to Recipient" part and a space-delimited colon):
+        #     00:00:00\tFrom Author [ to Recipient(privately)] : message\n
+        author,msg = msg.split(':',1)  # split at first colon
+        msg = msg.strip()
+        if author.startswith('From '):
+            author = author[5:]
+        author,*rcpt = author.split('  To  ',1)  # at most one(?) recipient
+        private = ' '.join(rcpt).endswith('(privately)')
 
-        # collect reactions
+        # add reaction
         if msg.startswith('Reacted to "'):
             orig,what = msg[12:].split('" with ')
-            if orig.endswith('...'):
-                orig = orig[:-3]
+            orig = normalize_ellipsis(orig)
             if orig not in reacts:
                 reacts[orig] = {what:[author]}
             else:
                 reacts[orig][what] = reacts[orig].get(what, []) + [author]
 
+        # remove reaction
+        elif what := re.search(r'Removed a (.) reaction from "', msg):
+            what = what.groups()[0]
+            orig = re.search(r'"(.*)"', msg).groups()[0]
+            orig = normalize_ellipsis(orig)
+            reacts[orig][what].remove(author)
+            if len(reacts[orig][what]) == 0:
+                del reacts[orig][what]
+            if reacts[orig] == {}:
+                del reacts[orig]
+
+        # normal message
         else:
-            stamps.append(t0[1:])
-            auth.append(author)
-            msgs.append({'text':msg})
+            auths.append(author)
+            msgs.append({'text':msg, 'priv':private})
 
-    assert len(stamps)==len(auth)==len(msgs), "Parse error"
-    return stamps,auth,msgs,reacts
+    return times,auths,msgs,reacts
 
 
-def reply_react(msgs,reacts):
+def reply_react(msgs:list[dict], reacts:dict) -> list[dict]:
     '''accumulate reply and reaction data in message dict'''
     for i,m in enumerate(msgs):
         msg = m['text']
@@ -72,8 +85,8 @@ def div(c,*args):
 
 
 def span(c,x,i=None):
-    _id = f' id="{i}"' if i else ''
-    return f'<span class="{c}"{_id}>{x}</span>'
+    ident = f' id="{i}"' if i else ''
+    return f'<span class="{c}"{ident}>{x}</span>'
 
 
 def anchor(c,destination,*args):
@@ -81,16 +94,18 @@ def anchor(c,destination,*args):
 
 
 def linkify(s):
-    links = re.findall('https://[^ \n\t]+', s)
-    for l in links:
+    for l in re.findall('https://[^ \n\t]+', s):
         s = s.replace(l, f'<a href="{l}">{l}</a>')
     return s
 
 
-def tohtml(filename,stamps,auth,msgs,reacts):
+def tohtml(args:argparse.Namespace, stamps:list[str], auth:list[str], msgs:list[dict], reacts:dict) -> str:
     msgs = reply_react(msgs,reacts)
     content = []
     for i,(time,author,msg) in enumerate(zip(stamps,auth,msgs)):
+        if msg['priv'] and not args.show_dms:
+            continue
+
         uid = f'id_{i}'
         container = []
 
@@ -105,6 +120,7 @@ def tohtml(filename,stamps,auth,msgs,reacts):
 
         # add main post body
         text = linkify(msg['text'])
+        text = text.replace('\n', '<br/>')
         container.append(div('post', span('time',time), span('auth',author), span('msg',text,uid)))
 
         # add optional reaction emoji and their authors
@@ -118,7 +134,6 @@ def tohtml(filename,stamps,auth,msgs,reacts):
         content.append(div('container', *container))
 
     content = '\n'.join(content)
-    filename = filename.split('/')[-1].split('.txt')[0]
     with open('main.css') as f:
         style = f.read()
 
@@ -128,11 +143,11 @@ def tohtml(filename,stamps,auth,msgs,reacts):
  <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{filename}</title>
+  <title>{args.title}</title>
 <style>{style}</style>
  </head>
 <body>
-    <h1>{filename}</h1>
+    <h1>{args.title}</h1>
     <hr>
 {content}
     <hr>
@@ -145,14 +160,17 @@ def tohtml(filename,stamps,auth,msgs,reacts):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('txt', nargs='+', help='chat log text files (end in .txt)')
-    p.add_argument('--filename', default='chat.txt', help='optional name for output')
+    p.add_argument('filenames', nargs='+', metavar='FILE', help='chat log text files, in sorted order')
+    p.add_argument('-t', '--title', default='Chat', help='title of resulting document')
+    p.add_argument('--show-dms', action='store_true', help='include private messages in generated output')
     args = p.parse_args()
 
-    t = '\n'
-    for fn in args.txt:
-        with open(fn) as f:
+    t = ''
+    for filename in args.filenames:
+        with open(filename) as f:
             t += f.read() #add tokens to start and end so processing can be uniform
-    t += '\n00:00:00'
-    html = tohtml(args.filename, *parse(t))
+
+    t += '00:00:00'  # dummy timestamp
+    data = parse(t)
+    html = tohtml(args, *data)
     print(html)
