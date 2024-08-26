@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-!chat.html
+!example.html
 *.html
 
 # C extensions
