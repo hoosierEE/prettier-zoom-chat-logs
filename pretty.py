@@ -1,5 +1,6 @@
 '''make zoom chat text files into prettier html files'''
-import argparse,os,re,sys
+from pathlib import Path
+import argparse,re,sys
 
 
 def normalize_ellipsis(message:str) -> str:
@@ -135,7 +136,7 @@ def tohtml(args:argparse.Namespace, stamps:list[str], auth:list[str], msgs:list[
         content.append(div('container', *container))
 
     content = '\n'.join(content)
-    with open(os.path.join(os.path.dirname(__file__), 'main.css')) as f:
+    with Path(__file__).with_name('main.css').open('r') as f:
         style = f.read()
 
     return f'''
